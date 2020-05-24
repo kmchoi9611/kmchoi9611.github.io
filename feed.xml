@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Write/Think/Learn</title>
+    <description></description>
+    <link>https://kmchoi9611.github.io//</link>
+    <atom:link href="https://kmchoi9611.github.io//feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Sun, 24 May 2020 15:46:38 +0900</pubDate>
+    <lastBuildDate>Sun, 24 May 2020 15:46:38 +0900</lastBuildDate>
+    <generator>Jekyll v4.0.0</generator>
+
+    
+      <item>
+        <title>[OpenCV] 픽셀단위의 이미지 조작</title>
+        <description>&lt;p&gt;딥러닝에 컴퓨터 비전 기술이 접목되면서 영상처리 분야도 주목받고 있다.&lt;br /&gt;
+아마도 근래 들어 가장 핫한 분야가 아닐까 생각된다(&lt;strike&gt;무엇보다 일자리가 많이 검색된다&lt;/strike&gt;)&lt;/p&gt;
+
+&lt;p&gt;컴퓨터 비전, 영상처리하면 빼놓을 수 없는 것이 바로 OpenCV이다.&lt;br /&gt;
+이 포스팅에서는 OpenCV를 설치하고 간단한 프로젝트를 작성할 것이다.&lt;/p&gt;
+
+&lt;p&gt;OpenCV는 다양한 영상처리 API를 제공하고 있다. 하지만 API 호출 방법만 이해해서는 이미지 처리 과정과 원리를 알 수 없고 무엇보다 재미가 없다.&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;이 포스팅에서는 픽셀단위로 이미지를 조작하는 프로그램을 만들어볼 것이다.&lt;/p&gt;
+
+&lt;h1 id=&quot;installing-opencv&quot;&gt;Installing OpenCV&lt;/h1&gt;
+&lt;p&gt;아래 URL에 접속해 OpenCV를 다운로드받는다.&lt;/p&gt;
+
+&lt;p&gt;https://opencv.org/releases&lt;/p&gt;
+
+&lt;p&gt;집필 과정의 최신 버전은 4.3.0이다.&lt;br /&gt;
+윈도우즈 OS를 사용 중인 유저라면 Windows를 선택해 설치 파일을 다운로드한다.&lt;/p&gt;
+
+&lt;p&gt;설치 파일은 소스코드와 프리빌트 라이브러리로 구성되어 있다.&lt;br /&gt;
+설치 파일을 실행시켜 아래 폴더에 설치하자.&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;c:\opencv
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;preparing-to-build&quot;&gt;Preparing To Build&lt;/h1&gt;
+&lt;p&gt;검색 엔진에서 Visual Studio Community 2019을 검색해 설치한다.&lt;/p&gt;
+
+&lt;h1 id=&quot;creating-new-project&quot;&gt;Creating New Project&lt;/h1&gt;
+
+&lt;p&gt;Visual Studio를 실행하고 신규 프로젝트를 생성한다.&lt;br /&gt;
+필자는 project 폴더를 만들어 이곳에 프로젝트를 생성했다.&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;c:\opencv\project\image-convert
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Solution Explorer에서 Project를 선택한 후 Property Pages를 열고&lt;br /&gt;
+아래와 같이 OpenCV 헤더파일과 라이브러리의 위치를 추가하자.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;C/C++ &amp;gt; General &amp;gt; Additional Include Directories
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;../../build/include;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Linker &amp;gt; General &amp;gt; Additional Library Directories
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;../../build/x64/vc15/lib;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Linker &amp;gt; Input &amp;gt; Additional Dependencies
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;opencv_world43d.lib;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;프로젝트에 새 소스코드를 만들고 아래 코드를 붙여넣는다.&lt;/p&gt;
+
+&lt;p&gt;RGB를 GBR로 변환하는 코드이다(빨강 =&amp;gt; 초록, 초록 =&amp;gt; 파랑, 파랑 =&amp;gt; 빨강).
+&lt;code class=&quot;highlighter-rouge&quot;&gt;Mat::at&amp;lt;Vec3b&amp;gt;&lt;/code&gt;로 얻어온 픽셀은 RGB가 아닌 BGR 순이라는 점에 유념하자.&lt;/p&gt;
+
+&lt;script src=&quot;https://gist.github.com/kmchoi9611/ad7651dac65189c12252dbd46ae83d16.js&quot;&gt;&lt;/script&gt;
+
+&lt;h1 id=&quot;result&quot;&gt;Result&lt;/h1&gt;
+
+&lt;p&gt;프로젝트를 빌드하고 명령 프롬프트를 열어 실행한다.&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;c:\opencv\project\image_convert\x64\Debug\image_convert.exe cherry-blossoms.jpg
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;다음은 실행화면이다. 벚꽃 사진인데, 픽셀 순서를 바꾸니 마치 수국(자양화)처럼 보이는 효과를 얻었다.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/2020-05-17/original-image.jpg&quot; alt=&quot;about&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/posts/2020-05-17/transformed-image.jpg&quot; alt=&quot;about&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;wrap-up&quot;&gt;Wrap up&lt;/h1&gt;
+
+&lt;p&gt;OpenCV를 이용해 픽셀 단위로 이미지를 조작하는 방법에 대해서 살펴봤다.&lt;/p&gt;
+
+&lt;p&gt;위에서 소개한 코드에서 transform 함수를 입맛에 맞게 바꿔보자.&lt;br /&gt;
+Sepia 효과를 적용해 옛스러운 느낌이 나도록 변경해보는 것도 재미있을 것이다.&lt;/p&gt;
+</description>
+        <pubDate>Sun, 17 May 2020 00:00:00 +0900</pubDate>
+        <link>https://kmchoi9611.github.io//2020/05/17/computer-vision-preparing-opencv/</link>
+        <guid isPermaLink="true">https://kmchoi9611.github.io//2020/05/17/computer-vision-preparing-opencv/</guid>
+      </item>
+    
+
+    
+      
+        
+      
+    
+      
+        
+          <item>
+            <title>About Me</title>
+            <description>&lt;p&gt;Hello, I’m Kangmin Choi.&lt;br /&gt;
+Thank you for coming to my place.&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;I love programming because it brings devices to life.&lt;br /&gt;
+That’s why I’ve been developing embedded software for many years.&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;I’m a big fan of TDD(Test-Driven Development).&lt;br /&gt;
+TDD taught me how to write better code.&lt;br /&gt;
+It gives me remove fear of changes.&lt;br /&gt;
+It makes the code reusable module.&lt;br /&gt;
+It saves a lot of my working time.&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;I’d like to share my thought with other people about not only programming but also my experience.
+That’s why I made this blog.&lt;/p&gt;
+
+&lt;p&gt;If you like, let me know what you think or a few words of encouragement about this blog.
+My email address is &lt;strong&gt;kmchoi9611@gmail.com&lt;/strong&gt;&lt;/p&gt;
+</description>
+            <link>https://kmchoi9611.github.io//about_me.html</link>
+          </item>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+
+  </channel>
+</rss>
